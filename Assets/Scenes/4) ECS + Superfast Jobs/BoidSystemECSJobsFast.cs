@@ -13,7 +13,7 @@ using Unity.Collections;
 public class BoidSystemECSJobsFast : JobComponentSystem {
 
     private EntityQuery boidGroup;
-    private BoidControllerECSJobsFast controller;
+    private IControllerData controller;
 
     // Copies all boid positions and headings into buffer
     [BurstCompile]
@@ -151,10 +151,10 @@ public class BoidSystemECSJobsFast : JobComponentSystem {
 
     protected override JobHandle OnUpdate(JobHandle inputDeps) {
 
-        if (!controller) {
+        if (controller!= null) {
             controller = BoidControllerECSJobsFast.Instance;
         }
-        if (controller) {
+        if (controller!= null) {
             int boidCount = boidGroup.CalculateEntityCount();
 
             var cellIndices = new NativeArray<int>(boidCount, Allocator.TempJob, NativeArrayOptions.UninitializedMemory);
@@ -174,7 +174,7 @@ public class BoidSystemECSJobsFast : JobComponentSystem {
                 UnityEngine.Random.Range(-360f, 360f),
                 UnityEngine.Random.Range(-360f, 360f)
             );
-            float offsetRange = controller.boidPerceptionRadius / 2f;
+            float offsetRange = controller.BoidPerceptionRadius / 2f;
             float3 randomHashOffset = new float3(
                 UnityEngine.Random.Range(-offsetRange, offsetRange),
                 UnityEngine.Random.Range(-offsetRange, offsetRange),
@@ -185,7 +185,7 @@ public class BoidSystemECSJobsFast : JobComponentSystem {
                 hashMap = hashMap.AsParallelWriter(),
                 cellRotationVary = randomHashRotation,
                 positionOffsetVary = randomHashOffset,
-                cellRadius = controller.boidPerceptionRadius,
+                cellRadius = controller.BoidPerceptionRadius,
             };
             JobHandle hashPositionsJobHandle = hashPositionsJob.Schedule(boidGroup, inputDeps);
             
@@ -205,17 +205,17 @@ public class BoidSystemECSJobsFast : JobComponentSystem {
 
             var moveJob = new MoveBoids {
                 deltaTime = Time.DeltaTime,
-                boidSpeed = controller.boidSpeed,
+                boidSpeed = controller.BoidSpeed,
 
-                separationWeight = controller.separationWeight,
-                alignmentWeight = controller.alignmentWeight,
-                cohesionWeight = controller.cohesionWeight,
+                separationWeight = controller.SeparationWeight,
+                alignmentWeight = controller.AlignmentWeight,
+                cohesionWeight = controller.CohesionWeight,
 
-                cageSize = controller.cageSize,
-                cageAvoidDist = controller.avoidWallsTurnDist,
-                cageAvoidWeight = controller.avoidWallsWeight,
+                cageSize = controller.CageSize,
+                cageAvoidDist = controller.AvoidWallsTurnDist,
+                cageAvoidWeight = controller.AvoidWallsWeight,
 
-                cellSize = controller.boidPerceptionRadius,
+                cellSize = controller.BoidPerceptionRadius,
                 cellIndices = cellIndices,
                 positionSumsOfCells = boidPositions,
                 headingSumsOfCells = boidHeadings,

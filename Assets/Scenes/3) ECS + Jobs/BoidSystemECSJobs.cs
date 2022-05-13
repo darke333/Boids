@@ -7,15 +7,15 @@ using Unity.Collections;
 
 public class BoidSystemECSJobs : JobComponentSystem {
     
-    private BoidControllerECSJobs controller;
+    private IControllerData controller;
 
     protected override JobHandle OnUpdate(JobHandle inputDeps) {
 
         // This runs only if there exists a BoidControllerECSJobs instance.
-        if (!controller) {
+        if (controller != null) {
             controller = BoidControllerECSJobs.Instance;
         }
-        if (controller) {
+        if (controller!= null) {
             EntityQuery boidQuery = GetEntityQuery(ComponentType.ReadOnly<BoidECSJobs>(), ComponentType.ReadOnly<LocalToWorld>());
 
             NativeArray<Entity> entityArray = boidQuery.ToEntityArray(Allocator.TempJob);
@@ -38,14 +38,14 @@ public class BoidSystemECSJobs : JobComponentSystem {
             BoidJob boidJob = new BoidJob {
                 otherBoids = boidArray,
                 newBoidTransforms = newBoidTransforms,
-                boidPerceptionRadius = controller.boidPerceptionRadius,
-                separationWeight = controller.separationWeight,
-                cohesionWeight = controller.cohesionWeight,
-                alignmentWeight = controller.alignmentWeight,
-                cageSize = controller.cageSize,
-                avoidWallsTurnDist = controller.avoidWallsTurnDist,
-                avoidWallsWeight = controller.avoidWallsWeight,
-                boidSpeed = controller.boidSpeed,
+                boidPerceptionRadius = controller.BoidPerceptionRadius,
+                separationWeight = controller.SeparationWeight,
+                cohesionWeight = controller.CohesionWeight,
+                alignmentWeight = controller.AlignmentWeight,
+                cageSize = controller.CageSize,
+                avoidWallsTurnDist = controller.AvoidWallsTurnDist,
+                avoidWallsWeight = controller.AvoidWallsWeight,
+                boidSpeed = controller.BoidSpeed,
                 deltaTime = Time.DeltaTime
             };
             BoidMoveJob boidMoveJob = new BoidMoveJob {

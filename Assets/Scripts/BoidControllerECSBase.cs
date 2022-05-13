@@ -7,83 +7,70 @@ using Unity.Transforms;
 using Unity.Collections;
 using Unity.Mathematics;
 
-public class BoidControllerECSBase<T> : MonoBehaviour, IBoidController
+public class BoidControllerECSBase<T> : BoidControllerBase
 {
-    public static BoidControllerECSBase<T> Instance;
+    [SerializeField] private Mesh _sharedMesh;
+    [SerializeField] private Material _sharedMaterial;
 
-    [SerializeField] private int boidAmount;
-    [SerializeField] private Mesh sharedMesh;
-    [SerializeField] private Material sharedMaterial;
+    private List<Entity> _boids = new List<Entity>();
+    private EntityManager _entityManager;
 
-    public float boidSpeed;
-    public float boidPerceptionRadius;
-    public float cageSize;
-
-    public float separationWeight;
-    public float cohesionWeight;
-    public float alignmentWeight;
-
-    public float avoidWallsWeight;
-    public float avoidWallsTurnDist;
-
-    private List<Entity> boids;
-    private EntityManager entityManager;
-
-    public void CreateBoids()
+    public override void CreateBoids()
     {
         Instance = this;
 
-        entityManager = World.DefaultGameObjectInjectionWorld.EntityManager;
+        _entityManager = World.DefaultGameObjectInjectionWorld.EntityManager;
 
-        EntityArchetype boidArchetype = entityManager.CreateArchetype(
+        EntityArchetype boidArchetype = _entityManager.CreateArchetype(
             typeof(T),
             typeof(RenderMesh),
             typeof(RenderBounds),
             typeof(LocalToWorld)
         );
 
-        NativeArray<Entity> boidArray = new NativeArray<Entity>(boidAmount, Allocator.Temp);
-        entityManager.CreateEntity(boidArchetype, boidArray);
+        NativeArray<Entity> boidArray = new NativeArray<Entity>(BoidAmount, Allocator.Temp);
+        _entityManager.CreateEntity(boidArchetype, boidArray);
 
         for (int i = 0; i < boidArray.Length; i++)
         {
             Unity.Mathematics.Random rand = new Unity.Mathematics.Random((uint) i + 1);
-            entityManager.SetComponentData(boidArray[i], new LocalToWorld
+            _entityManager.SetComponentData(boidArray[i], new LocalToWorld
             {
                 Value = float4x4.TRS(
                     RandomPosition(),
                     RandomRotation(),
                     new float3(1f))
             });
-            entityManager.SetSharedComponentData(boidArray[i], new RenderMesh
+            _entityManager.SetSharedComponentData(boidArray[i], new RenderMesh
             {
-                mesh = sharedMesh,
-                material = sharedMaterial,
+                mesh = _sharedMesh,
+                material = _sharedMaterial,
             });
         }
 
-        boids = boidArray.ToList();
+        _boids = boidArray.ToList();
         boidArray.Dispose();
     }
 
-    public void Dispose()
+    public override void Dispose()
     {
-        if (boids != null && boids.Count > 0)
+        if (_boids != null && _boids.Count > 0)
         {
-            foreach (Entity boid in boids)
+            foreach (Entity boid in _boids)
             {
-                entityManager.DestroyEntity(boid);
+                _entityManager.DestroyEntity(boid);
             }
         }
-        boids.Clear();
+
+        _boids.Clear();
     }
 
     private float3 RandomPosition()
     {
         return new float3(
-            UnityEngine.Random.Range(-cageSize / 2f, cageSize / 2f),
-            UnityEngine.Random.Range(-cageSize / 2f, cageSize / 2f),
-            UnityEngine.Random.Range(-cageSize / 2f, cageSize / 2f)
+            UnityEngine.Random.Range(-CageSize / 2f, CageSize / 2f),
+            UnityEngine.Random.Range(-CageSize / 2f, CageSize / 2f),
+            UnityEngine.Random.Range(-CageSize / 2f, CageSize / 2f)
         );
     }
 
@@ -102,9 +89,9 @@ public class BoidControllerECSBase<T> : MonoBehaviour, IBoidController
         Gizmos.DrawWireCube(
             Vector3.zero,
             new Vector3(
-                cageSize,
-                cageSize,
-                cageSize
+                CageSize,
+                CageSize,
+                CageSize
             )
         );
     }

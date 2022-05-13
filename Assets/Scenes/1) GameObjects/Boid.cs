@@ -1,25 +1,32 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 
-public class Boid : MonoBehaviour {
+public class Boid : MonoBehaviour
+{
+    private List<Boid> _boids;
+    private IControllerData _controller;
 
-    private BoidsController controller;
+    private Vector3 _separationForce;
+    private Vector3 _cohesionForce;
+    private Vector3 _alignmentForce;
 
-    private Vector3 separationForce;
-    private Vector3 cohesionForce;
-    private Vector3 alignmentForce;
+    private Vector3 _avoidWallsForce;
 
-    private Vector3 avoidWallsForce;
+    public void SetBoids(List<Boid> boids)
+    {
+        _boids = boids;
+    }
 
     private void Start() {
-        controller = BoidsController.Instance;
+        _controller = BoidControllerBase.Instance;
     }
 
     private void Update() {
-        calculateForces();
+        CalculateForces();
         moveForward();
     }
 
-    private void calculateForces() {
+    private void CalculateForces() {
 
         Vector3 seperationSum = Vector3.zero;
         Vector3 positionSum = Vector3.zero;
@@ -27,18 +34,18 @@ public class Boid : MonoBehaviour {
 
         int boidsNearby = 0;
 
-        for (int i = 0; i < controller.boids.Count; i++) {
+        for (int i = 0; i < _boids.Count; i++) {
 
-            if (this != controller.boids[i]) {
+            if (this != _boids[i]) {
 
-                Vector3 otherBoidPosition = controller.boids[i].transform.position;
+                Vector3 otherBoidPosition = _boids[i].transform.position;
                 float distToOtherBoid = (transform.position - otherBoidPosition).magnitude;
 
-                if (distToOtherBoid < controller.boidPerceptionRadius) {
+                if (distToOtherBoid < _controller.BoidPerceptionRadius) {
 
                     seperationSum += -(otherBoidPosition - transform.position) * (1f / Mathf.Max(distToOtherBoid, .0001f));
                     positionSum += otherBoidPosition;
-                    headingSum += controller.boids[i].transform.forward;
+                    headingSum += _boids[i].transform.forward;
 
                     boidsNearby++;
                 }
@@ -46,35 +53,35 @@ public class Boid : MonoBehaviour {
         }
 
         if (boidsNearby > 0) {
-            separationForce = seperationSum / boidsNearby;
-            cohesionForce   = (positionSum / boidsNearby) - transform.position;
-            alignmentForce  = headingSum / boidsNearby;
+            _separationForce = seperationSum / boidsNearby;
+            _cohesionForce   = (positionSum / boidsNearby) - transform.position;
+            _alignmentForce  = headingSum / boidsNearby;
         }
         else {
-            separationForce = Vector3.zero;
-            cohesionForce   = Vector3.zero;
-            alignmentForce  = Vector3.zero;
+            _separationForce = Vector3.zero;
+            _cohesionForce   = Vector3.zero;
+            _alignmentForce  = Vector3.zero;
         }
 
-    	if (minDistToBorder(transform.position, controller.cageSize) < controller.avoidWallsTurnDist) {
+    	if (minDistToBorder(transform.position, _controller.CageSize) < _controller.AvoidWallsTurnDist) {
             // Back to center of cage
-            avoidWallsForce = -transform.position.normalized;
+            _avoidWallsForce = -transform.position.normalized;
         }
         else {
-            avoidWallsForce = Vector3.zero;
+            _avoidWallsForce = Vector3.zero;
         }
     }
     
     private void moveForward() {
         Vector3 force = 
-            separationForce * controller.separationWeight +
-            cohesionForce   * controller.cohesionWeight +
-            alignmentForce  * controller.alignmentWeight +
-            avoidWallsForce * controller.avoidWallsWeight;
+            _separationForce * _controller.SeparationWeight +
+            _cohesionForce   * _controller.CohesionWeight +
+            _alignmentForce  * _controller.AlignmentWeight +
+            _avoidWallsForce * _controller.AvoidWallsWeight;
 
-        Vector3 velocity = transform.forward * controller.boidSpeed;
+        Vector3 velocity = transform.forward * _controller.BoidSpeed;
         velocity += force * Time.deltaTime;
-        velocity = velocity.normalized * controller.boidSpeed;
+        velocity = velocity.normalized * _controller.BoidSpeed;
 
         transform.position += velocity * Time.deltaTime;
         transform.rotation = Quaternion.LookRotation(velocity);

@@ -720,17 +720,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ac0715e62b8cc634280869cf0d676ada, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  boidAmount: 200
-  boidPrefab: {fileID: 9069040632846253451, guid: bfe2b6a3901d3f34aa7bde6536f8bda0, type: 3}
-  boidSpeed: 10
-  boidPerceptionRadius: 5
-  cageSize: 40
-  separationWeight: 25
-  cohesionWeight: 5
-  alignmentWeight: 10
-  avoidWallsWeight: 10
-  avoidWallsTurnDist: 5
-  boids: []
+  _boidAmount: 150
+  _boidSpeed: 10
+  _boidPerceptionRadius: 5
+  _cageSize: 40
+  _separationWeight: 25
+  _cohesionWeight: 5
+  _alignmentWeight: 10
+  _avoidWallsWeight: 10
+  _avoidWallsTurnDist: 5
+  _boidPrefab: {fileID: 9069040632846253451, guid: bfe2b6a3901d3f34aa7bde6536f8bda0, type: 3}
 --- !u!4 &104803445
 Transform:
   m_ObjectHideFlags: 0
@@ -2508,6 +2507,15 @@ MonoBehaviour:
   - {fileID: 916317777}
   - {fileID: 579235889}
   - {fileID: 2110140613}
+  _boidAmount: {fileID: 1739178249}
+  _boidSpeed: {fileID: 234320990}
+  _boidPerceptionRadius: {fileID: 1594004239}
+  _cageSize: {fileID: 1982258949}
+  _separationWeight: {fileID: 287446187}
+  _cohesionWeight: {fileID: 688934542}
+  _alignmentWeight: {fileID: 1338927828}
+  _avoidWallsWeight: {fileID: 1336423813}
+  _avoidWallsTurnDist: {fileID: 1422978228}
 --- !u!1 &394175563
 GameObject:
   m_ObjectHideFlags: 0
@@ -2957,17 +2965,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3cbdd49b63ea6284b82202d2d4f0d883, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  boidAmount: 5000
-  sharedMesh: {fileID: 3613567641014311022, guid: 0ac9384c15e7fd346a9cb7584c59a7d2, type: 3}
-  sharedMaterial: {fileID: 2100000, guid: 58fc4f2c6b1ae7841ad11d9dca6cd629, type: 2}
-  boidSpeed: 10
-  boidPerceptionRadius: 5
-  cageSize: 40
-  separationWeight: 25
-  cohesionWeight: 5
-  alignmentWeight: 10
-  avoidWallsWeight: 10
-  avoidWallsTurnDist: 5
+  _boidAmount: 5000
+  _boidSpeed: 10
+  _boidPerceptionRadius: 5
+  _cageSize: 40
+  _separationWeight: 25
+  _cohesionWeight: 5
+  _alignmentWeight: 10
+  _avoidWallsWeight: 10
+  _avoidWallsTurnDist: 5
+  _sharedMesh: {fileID: 3613567641014311022, guid: 0ac9384c15e7fd346a9cb7584c59a7d2, type: 3}
+  _sharedMaterial: {fileID: 2100000, guid: 58fc4f2c6b1ae7841ad11d9dca6cd629, type: 2}
 --- !u!4 &579235891
 Transform:
   m_ObjectHideFlags: 0
@@ -4086,17 +4094,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: df2ebfc4d45cf5e489cc639b291febe0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  boidAmount: 200
-  sharedMesh: {fileID: 3613567641014311022, guid: 0ac9384c15e7fd346a9cb7584c59a7d2, type: 3}
-  sharedMaterial: {fileID: 2100000, guid: 58fc4f2c6b1ae7841ad11d9dca6cd629, type: 2}
-  boidSpeed: 10
-  boidPerceptionRadius: 5
-  cageSize: 40
-  separationWeight: 25
-  cohesionWeight: 5
-  alignmentWeight: 10
-  avoidWallsWeight: 10
-  avoidWallsTurnDist: 5
+  _boidAmount: 150
+  _boidSpeed: 10
+  _boidPerceptionRadius: 5
+  _cageSize: 40
+  _separationWeight: 25
+  _cohesionWeight: 5
+  _alignmentWeight: 10
+  _avoidWallsWeight: 10
+  _avoidWallsTurnDist: 5
+  _sharedMesh: {fileID: 3613567641014311022, guid: 0ac9384c15e7fd346a9cb7584c59a7d2, type: 3}
+  _sharedMaterial: {fileID: 2100000, guid: 58fc4f2c6b1ae7841ad11d9dca6cd629, type: 2}
 --- !u!4 &916317779
 Transform:
   m_ObjectHideFlags: 0
@@ -9497,17 +9505,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 02df4e37513f93346a6fbb5f9d20215e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  boidAmount: 150000
-  sharedMesh: {fileID: 3613567641014311022, guid: 0ac9384c15e7fd346a9cb7584c59a7d2, type: 3}
-  sharedMaterial: {fileID: 2100000, guid: 58fc4f2c6b1ae7841ad11d9dca6cd629, type: 2}
-  boidSpeed: 20
-  boidPerceptionRadius: 50
-  cageSize: 500
-  separationWeight: 25
-  cohesionWeight: 5
-  alignmentWeight: 15
-  avoidWallsWeight: 10
-  avoidWallsTurnDist: 20
+  _boidAmount: 150000
+  _boidSpeed: 20
+  _boidPerceptionRadius: 50
+  _cageSize: 500
+  _separationWeight: 25
+  _cohesionWeight: 5
+  _alignmentWeight: 15
+  _avoidWallsWeight: 10
+  _avoidWallsTurnDist: 25
+  _sharedMesh: {fileID: 3613567641014311022, guid: 0ac9384c15e7fd346a9cb7584c59a7d2, type: 3}
+  _sharedMaterial: {fileID: 2100000, guid: 58fc4f2c6b1ae7841ad11d9dca6cd629, type: 2}
 --- !u!4 &2110140615
 Transform:
   m_ObjectHideFlags: 0
