@@ -27,10 +27,11 @@ public class UIController : MonoBehaviour
     public void Build()
     {
         Dispose();
+        ApplyValues();
         _boidController.CreateBoids();
     }
 
-    public void ChangeValues()
+    public void ApplyValues()
     {
         _boidController.BoidAmount = int.Parse(_boidAmount.text);
         _boidController.BoidSpeed = int.Parse(_boidSpeed.text);
