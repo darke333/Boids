@@ -16,7 +16,7 @@ public class UIController : MonoBehaviour
     [SerializeField] private TMP_InputField _avoidWallsWeight;
     [SerializeField] private TMP_InputField _avoidWallsTurnDist;
 
-    private int _curIndex;
+    private int _curIndex = -1;
     private BoidControllerBase _boidController;
 
     private void Awake()
@@ -27,7 +27,6 @@ public class UIController : MonoBehaviour
     public void Build()
     {
         Dispose();
-        GetController();
         _boidController.CreateBoids();
     }
 
@@ -46,9 +45,13 @@ public class UIController : MonoBehaviour
 
     public void ChangeController(int index)
     {
+        if (_curIndex.Equals(index))
+        {
+            return;
+        }
         _curIndex = index;
-        //GetController();
-        //SetInputs();
+        GetController();
+        SetInputs();
     }
 
     public void Dispose()
@@ -61,6 +64,7 @@ public class UIController : MonoBehaviour
 
     private void GetController()
     {
+        Dispose();
         _boidController = _controllers[_curIndex].GetComponent<BoidControllerBase>();
     }
 

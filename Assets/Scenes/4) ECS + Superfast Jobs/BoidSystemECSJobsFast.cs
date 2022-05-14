@@ -1,7 +1,7 @@
 ﻿/** 
 * Parts of this code were originally made by Bogdan Codreanu
 * Original code: https://github.com/BogdanCodreanu/ECS-Boids-Murmuration_Unity_2019.1
-*/ 
+*/
 
 using Unity.Jobs;
 using Unity.Burst;
@@ -10,19 +10,21 @@ using Unity.Transforms;
 using Unity.Mathematics;
 using Unity.Collections;
 
-public class BoidSystemECSJobsFast : JobComponentSystem {
-
+public class BoidSystemECSJobsFast : JobComponentSystem
+{
     private EntityQuery boidGroup;
     private IControllerData controller;
 
     // Copies all boid positions and headings into buffer
     [BurstCompile]
     [RequireComponentTag(typeof(BoidECSJobsFast))]
-    private struct CopyPositionsAndHeadingsInBuffer : IJobForEachWithEntity<LocalToWorld> {
+    private struct CopyPositionsAndHeadingsInBuffer : IJobForEachWithEntity<LocalToWorld>
+    {
         public NativeArray<float3> boidPositions;
         public NativeArray<float3> boidHeadings;
 
-        public void Execute(Entity boid, int boidIndex, [ReadOnly] ref LocalToWorld localToWorld) {
+        public void Execute(Entity boid, int boidIndex, [ReadOnly] ref LocalToWorld localToWorld)
+        {
             boidPositions[boidIndex] = localToWorld.Position;
             boidHeadings[boidIndex] = localToWorld.Forward;
         }
@@ -32,14 +34,17 @@ public class BoidSystemECSJobsFast : JobComponentSystem {
     // The cell grid has a random offset and rotation each frame to remove artefacts.
     [BurstCompile]
     [RequireComponentTag(typeof(BoidECSJobsFast))]
-    private struct HashPositionsToHashMap : IJobForEachWithEntity<LocalToWorld> {
+    private struct HashPositionsToHashMap : IJobForEachWithEntity<LocalToWorld>
+    {
         public NativeMultiHashMap<int, int>.ParallelWriter hashMap;
         [ReadOnly] public quaternion cellRotationVary;
         [ReadOnly] public float3 positionOffsetVary;
         [ReadOnly] public float cellRadius;
 
-        public void Execute(Entity boid, int boidIndex, [ReadOnly] ref LocalToWorld localToWorld) {
-            var hash = (int)math.hash(new int3(math.floor(math.mul(cellRotationVary, localToWorld.Position + positionOffsetVary) / cellRadius)));
+        public void Execute(Entity boid, int boidIndex, [ReadOnly] ref LocalToWorld localToWorld)
+        {
+            var hash = (int) math.hash(new int3(
+                math.floor(math.mul(cellRotationVary, localToWorld.Position + positionOffsetVary) / cellRadius)));
             hashMap.Add(hash, boidIndex);
         }
     }
@@ -51,19 +56,22 @@ public class BoidSystemECSJobsFast : JobComponentSystem {
     // This way every boid knows the sum of all the positions (and headings) of all the other
     // boids in the same cell -> no nested loop required -> massive performance boost
     [BurstCompile]
-    private struct MergeCellsJob : IJobNativeMultiHashMapMergedSharedKeyIndices {
+    private struct MergeCellsJob : IJobNativeMultiHashMapMergedSharedKeyIndices
+    {
         public NativeArray<int> indicesOfCells;
         public NativeArray<float3> cellPositions;
         public NativeArray<float3> cellHeadings;
         public NativeArray<int> cellCount;
 
-        public void ExecuteFirst(int firstBoidIndexEncountered) {
+        public void ExecuteFirst(int firstBoidIndexEncountered)
+        {
             indicesOfCells[firstBoidIndexEncountered] = firstBoidIndexEncountered;
             cellCount[firstBoidIndexEncountered] = 1;
             float3 positionInThisCell = cellPositions[firstBoidIndexEncountered] / cellCount[firstBoidIndexEncountered];
         }
 
-        public void ExecuteNext(int firstBoidIndexAsCellKey, int boidIndexEncountered) {
+        public void ExecuteNext(int firstBoidIndexAsCellKey, int boidIndexEncountered)
+        {
             cellCount[firstBoidIndexAsCellKey] += 1;
             cellHeadings[firstBoidIndexAsCellKey] += cellHeadings[boidIndexEncountered];
             cellPositions[firstBoidIndexAsCellKey] += cellPositions[boidIndexEncountered];
@@ -75,8 +83,8 @@ public class BoidSystemECSJobsFast : JobComponentSystem {
     // and directly applied to orientation and position.
     [BurstCompile]
     [RequireComponentTag(typeof(BoidECSJobsFast))]
-    private struct MoveBoids : IJobForEachWithEntity<LocalToWorld> {
-        
+    private struct MoveBoids : IJobForEachWithEntity<LocalToWorld>
+    {
         [ReadOnly] public float deltaTime;
         [ReadOnly] public float boidSpeed;
 
@@ -94,8 +102,8 @@ public class BoidSystemECSJobsFast : JobComponentSystem {
         [DeallocateOnJobCompletion] [ReadOnly] public NativeArray<float3> headingSumsOfCells;
         [DeallocateOnJobCompletion] [ReadOnly] public NativeArray<int> cellBoidCount;
 
-        public void Execute(Entity boid, int boidIndex, ref LocalToWorld localToWorld) {
-
+        public void Execute(Entity boid, int boidIndex, ref LocalToWorld localToWorld)
+        {
             float3 boidPosition = localToWorld.Position;
             int cellIndex = cellIndices[boidIndex];
 
@@ -105,7 +113,8 @@ public class BoidSystemECSJobsFast : JobComponentSystem {
 
             float3 force = float3.zero;
 
-            if (nearbyBoidCount > 0) {
+            if (nearbyBoidCount > 0)
+            {
                 float3 averagePosition = positionSum / nearbyBoidCount;
 
                 float distToAveragePositionSq = math.lengthsq(averagePosition - boidPosition);
@@ -118,15 +127,16 @@ public class BoidSystemECSJobsFast : JobComponentSystem {
                 float3 averageHeading = headingSum / nearbyBoidCount;
 
                 force += -toAveragePosition * separationWeight * needToLeave;
-                force +=  toAveragePosition * cohesionWeight;
-                force +=  averageHeading    * alignmentWeight;
+                force += toAveragePosition * cohesionWeight;
+                force += averageHeading * alignmentWeight;
             }
-            
+
             if (math.min(math.min(
-                (cageSize / 2f) - math.abs(boidPosition.x),
-                (cageSize / 2f) - math.abs(boidPosition.y)),
-                (cageSize / 2f) - math.abs(boidPosition.z))
-                    < cageAvoidDist) {
+                        (cageSize / 2f) - math.abs(boidPosition.x),
+                        (cageSize / 2f) - math.abs(boidPosition.y)),
+                    (cageSize / 2f) - math.abs(boidPosition.z))
+                < cageAvoidDist)
+            {
                 force += -math.normalize(boidPosition) * cageAvoidWeight;
             }
 
@@ -142,28 +152,38 @@ public class BoidSystemECSJobsFast : JobComponentSystem {
         }
     }
 
-    protected override void OnCreate() {
-        boidGroup = GetEntityQuery(new EntityQueryDesc {
-            All = new[] { ComponentType.ReadOnly<BoidECSJobsFast>(), ComponentType.ReadWrite<LocalToWorld>() },
+    protected override void OnCreate()
+    {
+        boidGroup = GetEntityQuery(new EntityQueryDesc
+        {
+            All = new[] {ComponentType.ReadOnly<BoidECSJobsFast>(), ComponentType.ReadWrite<LocalToWorld>()},
             Options = EntityQueryOptions.FilterWriteGroup
         });
     }
 
-    protected override JobHandle OnUpdate(JobHandle inputDeps) {
-
-        if (controller!= null) {
+    protected override JobHandle OnUpdate(JobHandle inputDeps)
+    {
+        if (controller == null)
+        {
             controller = BoidControllerECSJobsFast.Instance;
         }
-        if (controller!= null) {
+
+        if (controller != null)
+        {
             int boidCount = boidGroup.CalculateEntityCount();
 
-            var cellIndices = new NativeArray<int>(boidCount, Allocator.TempJob, NativeArrayOptions.UninitializedMemory);
-            var cellBoidCount = new NativeArray<int>(boidCount, Allocator.TempJob, NativeArrayOptions.UninitializedMemory);
-            var boidPositions = new NativeArray<float3>(boidCount, Allocator.TempJob, NativeArrayOptions.UninitializedMemory);
-            var boidHeadings = new NativeArray<float3>(boidCount, Allocator.TempJob, NativeArrayOptions.UninitializedMemory);
+            var cellIndices =
+                new NativeArray<int>(boidCount, Allocator.TempJob, NativeArrayOptions.UninitializedMemory);
+            var cellBoidCount =
+                new NativeArray<int>(boidCount, Allocator.TempJob, NativeArrayOptions.UninitializedMemory);
+            var boidPositions =
+                new NativeArray<float3>(boidCount, Allocator.TempJob, NativeArrayOptions.UninitializedMemory);
+            var boidHeadings =
+                new NativeArray<float3>(boidCount, Allocator.TempJob, NativeArrayOptions.UninitializedMemory);
             var hashMap = new NativeMultiHashMap<int, int>(boidCount, Allocator.TempJob);
 
-            var positionsAndHeadingsCopyJob = new CopyPositionsAndHeadingsInBuffer {
+            var positionsAndHeadingsCopyJob = new CopyPositionsAndHeadingsInBuffer
+            {
                 boidPositions = boidPositions,
                 boidHeadings = boidHeadings
             };
@@ -181,21 +201,23 @@ public class BoidSystemECSJobsFast : JobComponentSystem {
                 UnityEngine.Random.Range(-offsetRange, offsetRange)
             );
 
-            var hashPositionsJob = new HashPositionsToHashMap {
+            var hashPositionsJob = new HashPositionsToHashMap
+            {
                 hashMap = hashMap.AsParallelWriter(),
                 cellRotationVary = randomHashRotation,
                 positionOffsetVary = randomHashOffset,
                 cellRadius = controller.BoidPerceptionRadius,
             };
             JobHandle hashPositionsJobHandle = hashPositionsJob.Schedule(boidGroup, inputDeps);
-            
+
             // Proceed when these two jobs have been completed
             JobHandle copyAndHashJobHandle = JobHandle.CombineDependencies(
                 positionsAndHeadingsCopyJobHandle,
                 hashPositionsJobHandle
             );
 
-            var mergeCellsJob = new MergeCellsJob {
+            var mergeCellsJob = new MergeCellsJob
+            {
                 indicesOfCells = cellIndices,
                 cellPositions = boidPositions,
                 cellHeadings = boidHeadings,
@@ -203,7 +225,8 @@ public class BoidSystemECSJobsFast : JobComponentSystem {
             };
             JobHandle mergeCellsJobHandle = mergeCellsJob.Schedule(hashMap, 64, copyAndHashJobHandle);
 
-            var moveJob = new MoveBoids {
+            var moveJob = new MoveBoids
+            {
                 deltaTime = Time.DeltaTime,
                 boidSpeed = controller.BoidSpeed,
 
@@ -227,10 +250,11 @@ public class BoidSystemECSJobsFast : JobComponentSystem {
 
             inputDeps = moveJobHandle;
             boidGroup.AddDependency(inputDeps);
-            
+
             return inputDeps;
         }
-        else {
+        else
+        {
             return inputDeps;
         }
     }
